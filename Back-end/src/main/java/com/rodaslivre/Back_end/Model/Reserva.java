@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -25,6 +27,7 @@ public class Reserva {
     
     private float valortotal;
     
+    @Temporal(TemporalType.TIMESTAMP)
     private Date datadealuguel;
 
     @OneToOne

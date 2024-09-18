@@ -14,23 +14,28 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
-@Table(name="tb_reservas")
+@Table(name = "tb_reservas")
 @Data
 public class Reserva {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long Id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long Id;
 
     @NotNull(message = "A data de início não pode ser nula.")
     private int diasalugados;
-    
+
     private float valortotal;
-    
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date datadealuguel;
 
     @OneToOne
-	@JsonIgnoreProperties({"reserva", "reservas"})
-	private Carro carro;
+    @JsonIgnoreProperties({ "reserva", "reservas" })
+    private Carro carro;
+
+    @OneToOne
+    @JsonIgnoreProperties("reserva")
+    private Usuario usuario;
+
 }

@@ -11,7 +11,7 @@ import com.rodaslivre.Back_end.Model.Usuario;
 import com.rodaslivre.Back_end.Service.UsuarioClientService;
 
 @RestController
-@RequestMapping("/usuario/client")
+@RequestMapping("/usuarios/client")
 @CrossOrigin
 public class UserClientController {
     
@@ -20,7 +20,7 @@ public class UserClientController {
 
     @PostMapping("/cadastrar")
     public Usuario post(@RequestBody UserClientRequestDTO userClientRequestDTO){
-        return usuarioService.post(userClientRequestDTO);
+        return usuarioService.registrar(userClientRequestDTO);
     }
 
 }

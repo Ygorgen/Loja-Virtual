@@ -16,20 +16,16 @@ public class UsuarioClientService {
     @Autowired
     private RoleUserService roleUserService;
 
+    @Autowired
+    private EmailService emailService;
 
-    public Usuario post(UserClientRequestDTO userClientRequestDTO) {
+    public Usuario registrar(UserClientRequestDTO userClientRequestDTO) {
         Usuario usuario = new UserClientRequestDTO().converter(userClientRequestDTO);
         usuario.setDataCriacao(new Date());
         Usuario objetoNovo = usuarioRepository.saveAndFlush(usuario);
         roleUserService.vincularUserPermissionClient(objetoNovo);
+        emailService.sendEmailText(objetoNovo.getEmail(), "Cadastro em RodasLivre", "Cadastro Realizado com sucesso.Em breve você receberá a senha de acesso por Email !");
         return objetoNovo;
     }
-
-    
-
-
-
-
-
 
 }

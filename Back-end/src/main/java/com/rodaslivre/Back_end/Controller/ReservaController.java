@@ -19,8 +19,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.rodaslivre.Back_end.Model.Carro;
 import com.rodaslivre.Back_end.Model.Reserva;
+import com.rodaslivre.Back_end.Model.Usuario;
 import com.rodaslivre.Back_end.Repository.CarroRepository;
 import com.rodaslivre.Back_end.Repository.ReservaRepository;
+import com.rodaslivre.Back_end.Repository.UsuarioRepository;
 
 import jakarta.validation.Valid;
 
@@ -35,6 +37,9 @@ public class ReservaController {
 	@Autowired
 	private CarroRepository carroRepository;
 
+	@Autowired
+	private UsuarioRepository usuarioRepository;
+
 	@GetMapping
 	public ResponseEntity<List<Reserva>> getAll() {
 		return ResponseEntity.ok(reservaRepository.findAll());
@@ -47,21 +52,41 @@ public class ReservaController {
 	}
 
 	@PostMapping
-	public ResponseEntity<Reserva> post(@Valid @RequestBody Reserva reserva) {
-		return carroRepository.findById(reserva.getCarro().getId()).map(carro -> {
-			if (!carro.isDisponibilidade()) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carro Indisponível!", null);
-			}
-			float valorTotal = (float) (reserva.getDiasalugados() * carro.getPrecoPorDia());
-			reserva.setValortotal(valorTotal);
+public ResponseEntity<Reserva> post(@Valid @RequestBody Reserva reserva) {
+    // Verificar se o ID do usuário foi fornecido
+    Long usuarioId = reserva.getUsuario() != null ? reserva.getUsuario().getId() : null;
+    if (usuarioId == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID do usuário ausente ou inválido!");
+    }
 
-			carro.setDisponibilidade(false);
-			carroRepository.save(carro);
+    // Buscando o usuário pelo ID
+    Optional<Usuario> usuarioEncontrado = usuarioRepository.findById(usuarioId);
+    if (usuarioEncontrado.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário com o ID " + usuarioId + " não encontrado!");
+    }
 
-			reserva.setCarro(carro);
-			return ResponseEntity.status(HttpStatus.CREATED).body(reservaRepository.save(reserva));
-		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carro não Encontrado!", null));
-	}
+    // Buscando o carro associado à reserva
+    return carroRepository.findById(reserva.getCarro().getId()).map(carro -> {
+        if (!carro.isDisponibilidade()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carro Indisponível!");
+        }
+
+
+        float valorTotal = (float) (reserva.getDiasalugados() * carro.getPrecoPorDia());
+        reserva.setValortotal(valorTotal);
+
+
+        carro.setDisponibilidade(false);
+        carroRepository.save(carro);
+
+
+        reserva.setCarro(carro);
+        reserva.setUsuario(usuarioEncontrado.get());
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservaRepository.save(reserva));
+
+    }).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carro não Encontrado!"));
+}
+
 
 	@PutMapping
 	public ResponseEntity<Reserva> put(@Valid @RequestBody Reserva reserva) {
